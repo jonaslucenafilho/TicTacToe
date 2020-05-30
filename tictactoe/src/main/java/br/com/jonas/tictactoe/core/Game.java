@@ -1,7 +1,11 @@
 package br.com.jonas.tictactoe.core;
 
+import java.io.IOException;
+
 import br.com.jonas.tictactoe.Constants;
 import br.com.jonas.tictactoe.exceptions.InvalidMoveException;
+import br.com.jonas.tictactoe.score.FileScoreManager;
+import br.com.jonas.tictactoe.score.ScoreManager;
 import br.com.jonas.tictactoe.ui.UI;
 
 public class Game {
@@ -9,8 +13,11 @@ public class Game {
 	private Board board =  new Board();
 	private Player[] players = new Player[Constants.SYMBOL_PLAYERS.length];
 	private int currentPlayerIndex = -1;
+	private ScoreManager scoreManager;
 	
-	public void play() {
+	public void play() throws IOException {
+		scoreManager = createScoreManager();
+		
 		UI.printGameTitle();
 		
 		for (int i = 0; i < players.length; i++) {
@@ -36,8 +43,10 @@ public class Game {
 			if (sequenceFound) {
 				gameEnded = true;
 				winner = currentPlayer;	
+				
 			} else if (board.isFull()) {
 				gameEnded = true;
+				
 			} else {
 				currentPlayer = nextPlayer();
 			}
@@ -45,8 +54,11 @@ public class Game {
 		
 		if(winner == null) {
 			UI.printText("O jogo terminou empatado");
+	
 		} else {
 			UI.printText("O jogador '" + winner.getName() + "' venceu o jogo!");
+			
+			scoreManager.saveScore(winner);
 		}
 		
 		board.print();
@@ -58,6 +70,12 @@ public class Game {
 		char symbol = Constants.SYMBOL_PLAYERS[index];
 		Player player = new Player(name, board, symbol);
 		
+		Integer score = scoreManager.getScore(player);
+		
+		if (score != null) {
+			UI.printText("O jogador '" + player.getName() + "' já possui " + score + " vitória(s)!");
+		}
+		
 		UI.printText("O jogador '" + name + "' vai usar o símbolo '" + symbol + "'" );
 		
 		return player;
@@ -66,5 +84,9 @@ public class Game {
 	private Player nextPlayer() {
 		currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
 		return players[currentPlayerIndex];
+	}
+	
+	private ScoreManager createScoreManager() throws IOException {
+		return new FileScoreManager();
 	}
 }
