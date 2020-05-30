@@ -1,6 +1,7 @@
 package br.com.jonas.tictactoe.core;
 
 import br.com.jonas.tictactoe.Constants;
+import br.com.jonas.tictactoe.exceptions.InvalidMoveException;
 import br.com.jonas.tictactoe.ui.UI;
 
 public class Game {
@@ -23,7 +24,14 @@ public class Game {
 		while(!gameEnded) {
 			board.print();
 			
-			boolean sequenceFound = currentPlayer.play();
+			boolean sequenceFound;
+			try {
+				sequenceFound = currentPlayer.play();
+				
+			} catch (InvalidMoveException e) {
+				UI.printText("ERRO: " + e.getMessage());
+				continue;
+			}
 			
 			if (sequenceFound) {
 				gameEnded = true;
